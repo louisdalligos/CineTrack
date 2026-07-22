@@ -4,12 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { AxiosError } from 'axios';
 import { firstValueFrom } from 'rxjs';
 import { TtlCache } from '../common/cache/ttl-cache';
-import type {
-  CastMember,
-  MovieDetails,
-  MovieSummary,
-  PaginatedMovies,
-} from './types';
+import type { CastMember, MovieDetails, MovieSummary, PaginatedMovies } from './types';
 
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const CACHE_TTL_MS = 5 * 60 * 1000; // NFR6
@@ -73,11 +68,9 @@ export class TmdbService {
   }
 
   async getMovieDetails(tmdbId: number): Promise<MovieDetails> {
-    const data = await this.fetchCached<TmdbMovieDetails>(
-      `details:${tmdbId}`,
-      `/movie/${tmdbId}`,
-      { append_to_response: 'credits' },
-    );
+    const data = await this.fetchCached<TmdbMovieDetails>(`details:${tmdbId}`, `/movie/${tmdbId}`, {
+      append_to_response: 'credits',
+    });
 
     return {
       ...this.toMovieSummary(data),

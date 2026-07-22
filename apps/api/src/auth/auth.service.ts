@@ -1,8 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
@@ -68,11 +64,7 @@ export class AuthService {
     return { accessToken };
   }
 
-  private toSafeUser(user: {
-    id: string;
-    email: string;
-    createdAt: Date;
-  }): SafeUser {
+  private toSafeUser(user: { id: string; email: string; createdAt: Date }): SafeUser {
     return { id: user.id, email: user.email, createdAt: user.createdAt };
   }
 }
