@@ -91,10 +91,9 @@ describe('TmdbService', () => {
 
       await service.getTrending(2);
 
-      expect(http.get).toHaveBeenCalledWith(
-        'https://api.themoviedb.org/3/trending/movie/week',
-        { params: { api_key: 'test-tmdb-key', page: 2 } },
-      );
+      expect(http.get).toHaveBeenCalledWith('https://api.themoviedb.org/3/trending/movie/week', {
+        params: { api_key: 'test-tmdb-key', page: 2 },
+      });
     });
 
     it('serves a second identical request from cache without re-calling TMDB', async () => {
@@ -122,10 +121,9 @@ describe('TmdbService', () => {
 
       await service.searchMovies('matrix', 1);
 
-      expect(http.get).toHaveBeenCalledWith(
-        'https://api.themoviedb.org/3/search/movie',
-        { params: { api_key: 'test-tmdb-key', query: 'matrix', page: 1 } },
-      );
+      expect(http.get).toHaveBeenCalledWith('https://api.themoviedb.org/3/search/movie', {
+        params: { api_key: 'test-tmdb-key', query: 'matrix', page: 1 },
+      });
     });
 
     it('caches case-insensitively', async () => {
@@ -161,10 +159,9 @@ describe('TmdbService', () => {
 
       await service.getMovieDetails(603);
 
-      expect(http.get).toHaveBeenCalledWith(
-        'https://api.themoviedb.org/3/movie/603',
-        { params: { api_key: 'test-tmdb-key', append_to_response: 'credits' } },
-      );
+      expect(http.get).toHaveBeenCalledWith('https://api.themoviedb.org/3/movie/603', {
+        params: { api_key: 'test-tmdb-key', append_to_response: 'credits' },
+      });
     });
 
     it('handles a movie with no credits payload', async () => {
