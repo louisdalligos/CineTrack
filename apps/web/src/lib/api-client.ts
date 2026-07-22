@@ -1,4 +1,5 @@
 import { useAuthStore } from '@/stores/auth-store';
+import { clearAuthCookie } from '@/lib/auth-cookie';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
@@ -16,6 +17,20 @@ interface ApiClientOptions {
   body?: unknown;
 }
 
+// The Next.js middleware only checks that a token *exists* — it can't verify
+// it at the edge. So an expired token gets past routing and fails here on the
+// first real fetch. Treat that as a hard logout rather than leaving the user
+// on a screen that will never load.
+function handleUnauthorized(): void {
+  clearAuthCookie();
+  useAuthStore.getState().clearAuth();
+
+  if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+    const redirect = encodeURIComponent(window.location.pathname + window.location.search);
+    window.location.href = `/login?redirect=${redirect}`;
+  }
+}
+
 export async function apiClient<T>(path: string, options: ApiClientOptions = {}): Promise<T> {
   const token = useAuthStore.getState().token;
 
@@ -31,6 +46,11 @@ export async function apiClient<T>(path: string, options: ApiClientOptions = {})
   const data = await res.json().catch(() => null);
 
   if (!res.ok) {
+    // Don't bounce on a failed login attempt — that 401 is the expected
+    // "wrong password" path and the form renders it inline.
+    if (res.status === 401 && !path.startsWith('/auth/')) {
+      handleUnauthorized();
+    }
     throw new ApiError(data?.message ?? 'Request failed', res.status);
   }
 
