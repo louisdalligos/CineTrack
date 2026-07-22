@@ -1,0 +1,4 @@
+# Heavier checks before code leaves the machine. Keeps CI from failing on
+# things a local run would have caught.
+pnpm typecheck
+pnpm test

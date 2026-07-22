@@ -4,6 +4,8 @@
 FROM node:20-alpine AS base
 RUN apk add --no-cache openssl python3 make g++
 RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
+# Git hooks are irrelevant inside an image and .git is dockerignored.
+ENV HUSKY=0
 WORKDIR /repo
 
 FROM base AS build
