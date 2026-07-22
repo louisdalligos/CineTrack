@@ -1,22 +1,45 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useDiscoverMovies } from '@/hooks/use-movies';
+import { useWatchlist } from '@/hooks/use-watchlist';
 import { MovieCard } from './MovieCard';
 import { SearchBar } from './SearchBar';
 import { MovieGridSkeleton } from './MovieCardSkeleton';
 import { ErrorState } from './ErrorState';
+import type { WatchlistStatus } from '@/types/movie';
 
 const SEARCH_DEBOUNCE_MS = 300; // FR7
 
 export function DiscoverScreen() {
-  const [searchInput, setSearchInput] = useState('');
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Seeding from the URL is what makes back-navigation from a movie's details
+  // page land on the same search results (E3-S3 AC).
+  const [searchInput, setSearchInput] = useState(() => searchParams.get('q') ?? '');
   const debouncedSearch = useDebounce(searchInput, SEARCH_DEBOUNCE_MS);
   const isSearching = debouncedSearch.trim().length > 0;
 
+  useEffect(() => {
+    const query = debouncedSearch.trim();
+    const nextUrl = query ? `/discover?q=${encodeURIComponent(query)}` : '/discover';
+    // replace, not push — typing should not fill the history stack with a
+    // separate entry per keystroke.
+    router.replace(nextUrl, { scroll: false });
+  }, [debouncedSearch, router]);
+
   const { data, isPending, isError, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useDiscoverMovies(debouncedSearch);
+
+  const { data: watchlist } = useWatchlist();
+
+  // FR9: badge cards that are already on the list.
+  const statusByTmdbId = new Map<number, WatchlistStatus>(
+    watchlist?.map((item) => [item.tmdbId, item.status]) ?? [],
+  );
 
   const movies = data?.pages.flatMap((page) => page.results) ?? [];
 
@@ -53,9 +76,11 @@ export function DiscoverScreen() {
         <>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {movies.map((movie) => (
-              // TODO(E4-S1): pass watchlistStatus once GET /watchlist exists,
-              // so already-listed movies show their badge here (FR9).
-              <MovieCard key={movie.tmdbId} movie={movie} />
+              <MovieCard
+                key={movie.tmdbId}
+                movie={movie}
+                watchlistStatus={statusByTmdbId.get(movie.tmdbId)}
+              />
             ))}
           </div>
 
