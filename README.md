@@ -5,10 +5,12 @@ watch, and see your viewing stats.
 
 ## Live deployment
 
-|             | URL                          |
-| ----------- | ---------------------------- |
-| **Web app** | _pending deploy — see E6-S3_ |
-| **API**     | _pending deploy — see E6-S3_ |
+|             | URL                                                     |
+| ----------- | ------------------------------------------------------- |
+| **Web app** | https://cinetrack-web-service-production.up.railway.app |
+| **API**     | https://cinetrack-production-590e.up.railway.app        |
+
+No setup required — open the web app and sign in with the demo account below.
 
 ### Demo account
 
