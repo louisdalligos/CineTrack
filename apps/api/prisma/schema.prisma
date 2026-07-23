@@ -1,0 +1,44 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum WatchlistStatus {
+  PLANNED
+  WATCHING
+  WATCHED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  watchlistItems WatchlistItem[]
+
+  @@map("users")
+}
+
+model WatchlistItem {
+  id         String          @id @default(uuid())
+  userId     String
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tmdbId     Int
+  title      String
+  posterPath String?
+  genres     String[]
+  status     WatchlistStatus @default(PLANNED)
+  rating     Int?
+  watchedAt  DateTime?
+  createdAt  DateTime        @default(now())
+
+  @@unique([userId, tmdbId])
+  @@index([userId])
+  @@map("watchlist_items")
+}
