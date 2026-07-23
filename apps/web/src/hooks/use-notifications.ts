@@ -9,7 +9,11 @@ import type { NotificationSettings, NotificationState } from '@/types/notificati
 const SETTINGS_QUERY_KEY = ['notifications', 'settings'] as const;
 
 async function getRegistration(): Promise<ServiceWorkerRegistration> {
-  return navigator.serviceWorker.register('/sw.js');
+  await navigator.serviceWorker.register('/sw.js');
+  // register() resolves once the worker is registered, which is before it has
+  // activated. pushManager.subscribe() needs an *active* worker, so on a first
+  // visit it would otherwise fail with "no active Service Worker".
+  return navigator.serviceWorker.ready;
 }
 
 export function useNotifications() {

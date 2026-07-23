@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Clapperboard, Compass, LayoutDashboard, ListVideo, LogOut } from 'lucide-react';
+import { Clapperboard, Compass, LayoutDashboard, ListVideo, LogOut, Settings } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -23,6 +23,8 @@ const NAV_ITEMS = [
   { href: '/watchlist', label: 'Watchlist', icon: ListVideo },
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
 ];
+
+const FOOTER_ITEMS = [{ href: '/settings', label: 'Settings', icon: Settings }];
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -76,6 +78,16 @@ export function AppSidebar() {
 
       <SidebarFooter>
         <SidebarMenu>
+          {FOOTER_ITEMS.map((item) => (
+            <SidebarMenuItem key={item.href}>
+              <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.label}>
+                <Link href={item.href}>
+                  <item.icon />
+                  <span>{item.label}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
           {user?.email && (
             <SidebarMenuItem>
               <div className="truncate px-2 py-1 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">

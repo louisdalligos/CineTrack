@@ -44,13 +44,24 @@ function givenPushSupport(
     requestPermission: vi.fn().mockResolvedValue('granted'),
   });
 
+  const registration = {
+    pushManager: {
+      getSubscription: vi.fn().mockResolvedValue(subscription),
+      subscribe: vi.fn().mockResolvedValue({
+        endpoint: 'https://push.example.com/new',
+        toJSON: () => ({ keys: { p256dh: 'p', auth: 'a' } }),
+      }),
+    },
+  };
+
   Object.defineProperty(navigator, 'serviceWorker', {
     configurable: true,
     value: {
-      register: vi.fn().mockResolvedValue({ pushManager: {} }),
-      getRegistration: vi.fn().mockResolvedValue({
-        pushManager: { getSubscription: vi.fn().mockResolvedValue(subscription) },
-      }),
+      register: vi.fn().mockResolvedValue(registration),
+      getRegistration: vi.fn().mockResolvedValue(registration),
+      // subscribe() waits on this, because register() resolves before the
+      // worker has activated.
+      ready: Promise.resolve(registration),
     },
   });
 
