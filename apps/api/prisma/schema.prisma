@@ -20,7 +20,13 @@ model User {
   passwordHash String
   createdAt    DateTime @default(now())
 
-  watchlistItems WatchlistItem[]
+  // Reminder preferences (FR32). Defaults are chosen so a freshly seeded
+  // account is already eligible for reminders without configuring anything.
+  remindersEnabled  Boolean @default(true)
+  reminderAfterDays Int     @default(14)
+
+  watchlistItems    WatchlistItem[]
+  pushSubscriptions PushSubscription[]
 
   @@map("users")
 }
@@ -37,8 +43,29 @@ model WatchlistItem {
   rating     Int?
   watchedAt  DateTime?
   createdAt  DateTime        @default(now())
+  // Set when a reminder is sent, so a dormant list does not generate the
+  // same notification on every scheduled run (FR33).
+  lastRemindedAt DateTime?
 
   @@unique([userId, tmdbId])
   @@index([userId])
   @@map("watchlist_items")
+}
+
+/// One row per browser or device. A user who enables notifications on a
+/// second device gets a second subscription rather than replacing the first
+/// (FR30). Endpoint is unique because it is the push service's own
+/// identifier for the subscription.
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("push_subscriptions")
 }
