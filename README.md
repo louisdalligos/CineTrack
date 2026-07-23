@@ -36,10 +36,13 @@ docker compose up
 
 Then open **http://localhost:3000** and log in with the demo account above.
 
-> **TMDB key:** the app works without one — trending and search will return errors, but login,
-> the watchlist, and the dashboard all function on seeded data. To enable movie discovery, set
-> `TMDB_API_KEY` in `.env` before starting. A free v3 key comes from
-> [themoviedb.org/settings/api](https://www.themoviedb.org/settings/api).
+> **TMDB key — recommended.** Without one, login, the watchlist, and the dashboard all work on
+> seeded data, but the Discover screen shows an error and seeded movies have no posters. A free
+> v3 key takes about a minute to obtain from
+> [themoviedb.org/settings/api](https://www.themoviedb.org/settings/api); set it as
+> `TMDB_API_KEY` in `.env` before starting.
+>
+> To see the full app without setting anything up, use the deployed URLs at the top of this file.
 
 To stop and wipe the database:
 
@@ -103,6 +106,8 @@ pnpm format:check
 
 All four run in CI on every push and pull request to `main` and `develop`. Pull requests into
 `main` additionally run a full `docker compose` cold-start smoke test.
+
+Production runs on Railway (API and web) with Neon for Postgres. See [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ---
 
