@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { WatchlistScreen } from '@/components/WatchlistScreen';
 
 export const metadata = {
@@ -11,9 +12,9 @@ export default function WatchlistPage() {
   return (
     <Suspense
       fallback={
-        <main className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-8 sm:px-6">
-          <div className="h-8 w-48 animate-pulse rounded bg-gray-200" />
-          <div className="h-9 w-full animate-pulse rounded bg-gray-200" />
+        <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8 sm:px-6">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-9 w-full" />
         </main>
       }
     >

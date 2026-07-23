@@ -2,11 +2,15 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { ChevronLeft } from 'lucide-react';
 import { useMovieDetails } from '@/hooks/use-movie-details';
 import { posterUrl, profileUrl } from '@/lib/tmdb-image';
 import { WatchlistControls } from './WatchlistControls';
 import { ErrorState } from './ErrorState';
 import { ApiError } from '@/lib/api-client';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function formatRuntime(minutes: number | null): string {
   if (!minutes) return 'Runtime unknown';
@@ -23,25 +27,27 @@ export function MovieDetailsScreen({ tmdbId }: { tmdbId: number }) {
   // exact history entry they came from, so the Discover search query (held in
   // the URL) and the browser's restored scroll position both survive.
   const backButton = (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
+      size="sm"
       onClick={() => router.back()}
-      className="self-start text-sm text-gray-600 underline hover:text-black"
+      className="-ml-2 self-start text-muted-foreground"
     >
-      ← Back
-    </button>
+      <ChevronLeft className="size-4" />
+      Back
+    </Button>
   );
 
   if (isPending) {
     return (
-      <main className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-8 sm:px-6">
+      <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-8 sm:px-6">
         {backButton}
         <div className="flex flex-col gap-6 sm:flex-row">
-          <div className="aspect-[2/3] w-full animate-pulse rounded-lg bg-gray-200 sm:w-64" />
+          <Skeleton className="aspect-[2/3] w-full rounded-lg sm:w-64" />
           <div className="flex flex-1 flex-col gap-3">
-            <div className="h-8 w-2/3 animate-pulse rounded bg-gray-200" />
-            <div className="h-4 w-1/3 animate-pulse rounded bg-gray-200" />
-            <div className="h-24 w-full animate-pulse rounded bg-gray-200" />
+            <Skeleton className="h-8 w-2/3" />
+            <Skeleton className="h-4 w-1/3" />
+            <Skeleton className="h-24 w-full" />
           </div>
         </div>
       </main>
@@ -51,7 +57,7 @@ export function MovieDetailsScreen({ tmdbId }: { tmdbId: number }) {
   if (isError) {
     const notFound = error instanceof ApiError && error.status === 404;
     return (
-      <main className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-8 sm:px-6">
+      <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-8 sm:px-6">
         {backButton}
         <ErrorState
           title={notFound ? 'Movie not found' : 'Something went wrong'}
@@ -69,11 +75,11 @@ export function MovieDetailsScreen({ tmdbId }: { tmdbId: number }) {
   const poster = posterUrl(movie.posterPath, 'w500');
 
   return (
-    <main className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-8 sm:px-6">
+    <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-8 sm:px-6">
       {backButton}
 
       <div className="flex flex-col gap-6 sm:flex-row">
-        <div className="relative aspect-[2/3] w-full shrink-0 overflow-hidden rounded-lg bg-gray-100 sm:w-64">
+        <div className="relative aspect-[2/3] w-full shrink-0 overflow-hidden rounded-lg border bg-muted sm:w-64">
           {poster ? (
             <Image
               src={poster}
@@ -84,7 +90,7 @@ export function MovieDetailsScreen({ tmdbId }: { tmdbId: number }) {
               priority
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-sm text-gray-500">
+            <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
               No poster available
             </div>
           )}
@@ -93,7 +99,7 @@ export function MovieDetailsScreen({ tmdbId }: { tmdbId: number }) {
         <div className="flex flex-1 flex-col gap-4">
           <div>
             <h1 className="text-2xl font-semibold">{movie.title}</h1>
-            <p className="mt-1 text-sm text-gray-600">
+            <p className="mt-1 text-sm text-muted-foreground">
               {movie.year ?? 'Unknown year'} · {formatRuntime(movie.runtime)} · ★{' '}
               {movie.rating.toFixed(1)}
             </p>
@@ -102,17 +108,14 @@ export function MovieDetailsScreen({ tmdbId }: { tmdbId: number }) {
           {movie.genres.length > 0 && (
             <ul className="flex flex-wrap gap-2">
               {movie.genres.map((genre) => (
-                <li
-                  key={genre}
-                  className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700"
-                >
-                  {genre}
+                <li key={genre}>
+                  <Badge variant="secondary">{genre}</Badge>
                 </li>
               ))}
             </ul>
           )}
 
-          <p className="text-sm leading-relaxed text-gray-800">
+          <p className="text-sm leading-relaxed text-muted-foreground">
             {movie.overview || 'No synopsis available for this title.'}
           </p>
 
@@ -128,7 +131,7 @@ export function MovieDetailsScreen({ tmdbId }: { tmdbId: number }) {
               const profile = profileUrl(member.profilePath);
               return (
                 <li key={member.id} className="flex flex-col gap-2">
-                  <div className="relative aspect-[2/3] overflow-hidden rounded bg-gray-100">
+                  <div className="relative aspect-[2/3] overflow-hidden rounded-md border bg-muted">
                     {profile ? (
                       <Image
                         src={profile}
@@ -138,14 +141,14 @@ export function MovieDetailsScreen({ tmdbId }: { tmdbId: number }) {
                         className="object-cover"
                       />
                     ) : (
-                      <div className="flex h-full items-center justify-center text-xs text-gray-400">
+                      <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
                         No photo
                       </div>
                     )}
                   </div>
                   <div>
                     <p className="text-sm font-medium leading-tight">{member.name}</p>
-                    <p className="text-xs text-gray-600">{member.character}</p>
+                    <p className="text-xs text-muted-foreground">{member.character}</p>
                   </div>
                 </li>
               );

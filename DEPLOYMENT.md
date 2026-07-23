@@ -55,14 +55,20 @@ needs setting under Build.
 
 ### Variables
 
-| Variable       | Value                                                        |
-| -------------- | ------------------------------------------------------------ |
-| `DATABASE_URL` | Neon pooled connection string from step 1                    |
-| `JWT_SECRET`   | Generate one: `openssl rand -base64 32` — **not** `changeme` |
-| `TMDB_API_KEY` | Your TMDB v3 key                                             |
-| `CORS_ORIGIN`  | Leave empty for now; set in step 4                           |
+| Variable            | Value                                                         |
+| ------------------- | ------------------------------------------------------------- |
+| `DATABASE_URL`      | Neon pooled connection string from step 1                     |
+| `JWT_SECRET`        | Generate one: `openssl rand -base64 32` — **not** `changeme`  |
+| `TMDB_API_KEY`      | Your TMDB v3 key                                              |
+| `CORS_ORIGIN`       | Leave empty for now; set in step 4                            |
+| `VAPID_PUBLIC_KEY`  | Public half of a pair from `npx web-push generate-vapid-keys` |
+| `VAPID_PRIVATE_KEY` | Private half of the same pair                                 |
+| `VAPID_SUBJECT`     | A contact address, e.g. `mailto:you@example.com`              |
 
 Do **not** set `PORT` — Railway injects it and the app reads it from the environment.
+
+The VAPID variables are optional: without them reminders are disabled and the
+rest of the application is unaffected.
 
 ### Expose and verify
 
@@ -94,11 +100,12 @@ In the **same project**: **New → GitHub Repo**, select the same repository aga
 
 ### Variables
 
-| Variable              | Value                                      |
-| --------------------- | ------------------------------------------ |
-| `NEXT_PUBLIC_API_URL` | The API URL from step 2, no trailing slash |
+| Variable                       | Value                                              |
+| ------------------------------ | -------------------------------------------------- |
+| `NEXT_PUBLIC_API_URL`          | The API URL from step 2, no trailing slash         |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Identical to `VAPID_PUBLIC_KEY` on the API service |
 
-> **This one is consumed at build time, not runtime.** `next build` inlines `NEXT_PUBLIC_*` values
+> **Both are consumed at build time, not runtime.** `next build` inlines `NEXT_PUBLIC_*` values
 > into the bundle, so `apps/web/Dockerfile` declares it as an `ARG`. Railway passes service
 > variables to Docker builds as build arguments, so setting it here is enough — but it means
 > **changing it requires a rebuild, not a restart**.
@@ -135,6 +142,9 @@ Railway redeploys automatically. Exact match — scheme, host, no trailing slash
 - [ ] Adding a movie from its details page survives a refresh
 - [ ] Watchlist filters work and the URL updates
 - [ ] Dashboard shows non-zero stats
+- [ ] Settings screen reports reminders as available, not "not configured"
+- [ ] Turning reminders on subscribes without error
+- [ ] **Send a test notification** delivers one
 - [ ] Both production URLs added to the top of `README.md`
 
 ---
@@ -155,6 +165,17 @@ The deploy logs will show the Prisma error directly.
 
 **Health check never passes** — the app must bind `0.0.0.0` and use Railway's injected `PORT`.
 Both are handled in `main.ts`.
+
+**Settings says notifications are not configured** — the API service is missing
+one or more `VAPID_*` variables. All three are required.
+
+**Subscribing fails with a 403 from the push service** — the browser's key does
+not match the API's. `NEXT_PUBLIC_VAPID_PUBLIC_KEY` on the web service must be
+byte-identical to `VAPID_PUBLIC_KEY` on the API, and the web service needs a
+**rebuild** after changing it, not a restart.
+
+**No notification on iPhone** — iOS only delivers to sites installed to the
+Home Screen, on 16.4 or later. Share → Add to Home Screen, then open from there.
 
 **Login works, then everything 401s** — `JWT_SECRET` changed between deploys, invalidating issued
 tokens. Log out and back in.

@@ -165,6 +165,10 @@ route param, query string, or body, so one user cannot read or mutate another's 
 misses return `404` rather than `403`, so the API doesn't confirm that another user's record
 exists.
 
+**The service worker only handles push.** It has no `fetch` handler and caches
+nothing, so it cannot serve stale assets after a deploy — a failure mode worse
+than the offline support it would buy.
+
 **Stats are aggregated in the database.** The dashboard hits a single `/stats` endpoint backed by
 four concurrent Prisma aggregate queries rather than loading rows and counting in JavaScript.
 
@@ -179,6 +183,7 @@ four concurrent Prisma aggregate queries rather than loading rows and counting i
 | `/movies/[id]`        | Full details, cast, and add/edit watchlist entry                  |
 | `/watchlist`          | Filterable list with inline status, rating, and removal           |
 | `/dashboard`          | Counts per status, watched this month, average rating, top genres |
+| `/settings`           | Reminder preferences and notification permissions                 |
 
 Unauthenticated visits to any protected route redirect to `/login` and return to the originally
 requested page after signing in.
@@ -192,18 +197,64 @@ requested page after signing in.
 
 ---
 
+## Reminders
+
+Films left in Planned past a chosen interval trigger a push notification, so a
+watchlist does not quietly become a list of things you forgot about. The
+interval defaults to two weeks and is configurable per account under Settings.
+
+Reminders are optional. Without VAPID keys the settings screen says so plainly
+and everything else is unaffected.
+
+### Enabling them locally
+
+```bash
+npx web-push generate-vapid-keys
+```
+
+Put the private key in `VAPID_PRIVATE_KEY`, a contact address in
+`VAPID_SUBJECT`, and the **public key in both** `VAPID_PUBLIC_KEY` and
+`NEXT_PUBLIC_VAPID_PUBLIC_KEY` — the API signs with it and the browser needs it
+to subscribe.
+
+`NEXT_PUBLIC_VAPID_PUBLIC_KEY` is inlined into the bundle at build time, so
+after setting it run `docker compose up --build` rather than restarting.
+
+### Trying it out
+
+Sign in, open **Settings**, turn reminders on, and accept the browser prompt.
+**Send a test notification** delivers one immediately — the scheduled job only
+fires for films added more than a fortnight ago, so it is not a practical way
+to see the feature working.
+
+### Platform notes
+
+- **iOS and iPadOS** deliver web push only to sites installed to the Home
+  Screen, on 16.4 or later. The settings screen detects this and explains the
+  install step rather than offering a control that would do nothing.
+- **Safari on macOS, Chrome, Edge and Firefox** work without installation.
+- The reminder job runs in-process on a single API instance. Running more than
+  one would produce duplicate sends; that would need an advisory lock or a
+  dedicated worker, neither of which is warranted at this size.
+
+---
+
 ## Environment variables
 
 Set in the root `.env` for Docker (Compose substitutes them into each service):
 
-| Variable              | Purpose                        | Default                                |
-| --------------------- | ------------------------------ | -------------------------------------- |
-| `POSTGRES_USER`       | Database user                  | `postgres`                             |
-| `POSTGRES_PASSWORD`   | Database password              | `postgres`                             |
-| `POSTGRES_DB`         | Database name                  | `cinetrack`                            |
-| `JWT_SECRET`          | Signing secret for auth tokens | `changeme` — **replace in production** |
-| `TMDB_API_KEY`        | TMDB v3 API key                | none — discovery disabled without it   |
-| `NEXT_PUBLIC_API_URL` | API base URL the browser calls | `http://localhost:4000`                |
+| Variable                       | Purpose                                                             | Default                                |
+| ------------------------------ | ------------------------------------------------------------------- | -------------------------------------- |
+| `POSTGRES_USER`                | Database user                                                       | `postgres`                             |
+| `POSTGRES_PASSWORD`            | Database password                                                   | `postgres`                             |
+| `POSTGRES_DB`                  | Database name                                                       | `cinetrack`                            |
+| `JWT_SECRET`                   | Signing secret for auth tokens                                      | `changeme` — **replace in production** |
+| `TMDB_API_KEY`                 | TMDB v3 API key                                                     | none — discovery disabled without it   |
+| `NEXT_PUBLIC_API_URL`          | API base URL the browser calls                                      | `http://localhost:4000`                |
+| `VAPID_PUBLIC_KEY`             | Web push signing key                                                | none — reminders disabled without it   |
+| `VAPID_PRIVATE_KEY`            | Web push signing key, server-side only                              | none                                   |
+| `VAPID_SUBJECT`                | Contact address for the push service, e.g. `mailto:you@example.com` | none                                   |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Same value as `VAPID_PUBLIC_KEY`; the browser needs it to subscribe | none                                   |
 
 For non-Docker runs, `apps/api/.env` additionally needs:
 
@@ -218,19 +269,24 @@ For non-Docker runs, `apps/api/.env` additionally needs:
 
 All endpoints require `Authorization: Bearer <token>` except where marked public.
 
-| Method   | Endpoint                  | Description                                         |
-| -------- | ------------------------- | --------------------------------------------------- |
-| `POST`   | `/auth/register`          | Create an account. Public. `409` on duplicate email |
-| `POST`   | `/auth/login`             | Exchange credentials for a 24h JWT. Public          |
-| `GET`    | `/health`                 | Liveness check. Public                              |
-| `GET`    | `/movies/trending?page=`  | Trending movies via TMDB                            |
-| `GET`    | `/movies/search?q=&page=` | Search movies by title                              |
-| `GET`    | `/movies/:id`             | Full details including top-billed cast              |
-| `GET`    | `/watchlist?status=`      | The current user's watchlist, optionally filtered   |
-| `POST`   | `/watchlist`              | Add a movie. `409` if already present               |
-| `PATCH`  | `/watchlist/:id`          | Update status and/or rating                         |
-| `DELETE` | `/watchlist/:id`          | Remove an item                                      |
-| `GET`    | `/stats`                  | Aggregated dashboard statistics                     |
+| Method   | Endpoint                   | Description                                         |
+| -------- | -------------------------- | --------------------------------------------------- |
+| `POST`   | `/auth/register`           | Create an account. Public. `409` on duplicate email |
+| `POST`   | `/auth/login`              | Exchange credentials for a 24h JWT. Public          |
+| `GET`    | `/health`                  | Liveness check. Public                              |
+| `GET`    | `/movies/trending?page=`   | Trending movies via TMDB                            |
+| `GET`    | `/movies/search?q=&page=`  | Search movies by title                              |
+| `GET`    | `/movies/:id`              | Full details including top-billed cast              |
+| `GET`    | `/watchlist?status=`       | The current user's watchlist, optionally filtered   |
+| `POST`   | `/watchlist`               | Add a movie. `409` if already present               |
+| `PATCH`  | `/watchlist/:id`           | Update status and/or rating                         |
+| `DELETE` | `/watchlist/:id`           | Remove an item                                      |
+| `GET`    | `/stats`                   | Aggregated dashboard statistics                     |
+| `GET`    | `/notifications/settings`  | Reminder preferences and push availability          |
+| `PATCH`  | `/notifications/settings`  | Update reminder preferences                         |
+| `POST`   | `/notifications/subscribe` | Register a browser for push                         |
+| `DELETE` | `/notifications/subscribe` | Remove a browser's subscription                     |
+| `POST`   | `/notifications/test`      | Send the caller a test notification                 |
 
 ---
 

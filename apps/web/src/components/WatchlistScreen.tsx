@@ -5,6 +5,8 @@ import { useWatchlist } from '@/hooks/use-watchlist';
 import { WatchlistRow } from './WatchlistRow';
 import { EmptyState } from './EmptyState';
 import { ErrorState } from './ErrorState';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { WatchlistStatus } from '@/types/movie';
 import { STATUS_LABELS, WATCHLIST_STATUSES } from '@/types/watchlist';
 
@@ -25,7 +27,7 @@ export function WatchlistScreen() {
   const activeFilter = parseFilter(searchParams.get('status'));
 
   // Filtering happens server-side via GET /watchlist?status= (FR13). Each tab
-  // gets its own cache entry, so switching back to a visited tab is instant.
+  // gets its own cache entry, so returning to a visited tab is instant.
   const {
     data: items,
     isPending,
@@ -34,71 +36,61 @@ export function WatchlistScreen() {
   } = useWatchlist(activeFilter === 'ALL' ? undefined : activeFilter);
 
   function selectFilter(filter: FilterValue) {
-    // push, not replace — tab changes are meaningful history the user may
-    // want to navigate back through.
+    // push, not replace — tab changes are meaningful history.
     router.push(filter === 'ALL' ? '/watchlist' : `/watchlist?status=${filter}`, {
       scroll: false,
     });
   }
 
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-8 sm:px-6">
-      <h1 className="text-2xl font-semibold">My watchlist</h1>
-
-      <div role="tablist" aria-label="Filter by status" className="flex flex-wrap gap-2">
-        {FILTERS.map((filter) => {
-          const isActive = filter.value === activeFilter;
-          return (
-            <button
-              key={filter.value}
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => selectFilter(filter.value)}
-              className={`rounded-full px-4 py-1.5 text-sm transition ${
-                isActive ? 'bg-black text-white' : 'border hover:bg-gray-50'
-              }`}
-            >
-              {filter.label}
-            </button>
-          );
-        })}
+    <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8 sm:px-6">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">My watchlist</h1>
+        <p className="text-sm text-muted-foreground">Everything you meant to watch.</p>
       </div>
 
-      {isPending && (
-        <ul className="flex flex-col gap-3">
-          {Array.from({ length: 4 }, (_, index) => (
-            <li key={index} className="h-40 animate-pulse rounded-lg bg-gray-100" />
+      <Tabs value={activeFilter} onValueChange={(value) => selectFilter(value as FilterValue)}>
+        <TabsList>
+          {FILTERS.map((filter) => (
+            <TabsTrigger key={filter.value} value={filter.value}>
+              {filter.label}
+            </TabsTrigger>
           ))}
-        </ul>
-      )}
+        </TabsList>
 
-      {isError && (
-        <ErrorState
-          message="We could not load your watchlist. Please try again."
-          onRetry={() => refetch()}
-        />
-      )}
+        <TabsContent value={activeFilter} className="mt-6 flex flex-col gap-3">
+          {isPending &&
+            Array.from({ length: 4 }, (_, index) => (
+              <Skeleton key={index} className="h-40 rounded-xl" />
+            ))}
 
-      {!isPending && !isError && items && items.length === 0 && (
-        <EmptyState
-          title={activeFilter === 'ALL' ? 'Your watchlist is empty' : 'Nothing here yet'}
-          message={
-            activeFilter === 'ALL'
-              ? 'Movies you plan to watch will show up here. Find something to get started.'
-              : `You have no movies marked as ${STATUS_LABELS[activeFilter as WatchlistStatus].toLowerCase()}.`
-          }
-          ctaHref="/discover"
-          ctaLabel="Discover movies"
-        />
-      )}
+          {isError && (
+            <ErrorState
+              message="We could not load your watchlist. Please try again."
+              onRetry={() => refetch()}
+            />
+          )}
 
-      {items && items.length > 0 && (
-        <ul className="flex flex-col gap-3">
-          {items.map((item) => (
+          {!isPending && !isError && items && items.length === 0 && (
+            <EmptyState
+              title={activeFilter === 'ALL' ? 'Your watchlist is empty' : 'Nothing here yet'}
+              message={
+                activeFilter === 'ALL'
+                  ? 'Movies you plan to watch will show up here. Find something to get started.'
+                  : `You have no movies marked as ${STATUS_LABELS[
+                      activeFilter as WatchlistStatus
+                    ].toLowerCase()}.`
+              }
+              ctaHref="/discover"
+              ctaLabel="Discover movies"
+            />
+          )}
+
+          {items?.map((item) => (
             <WatchlistRow key={item.id} item={item} />
           ))}
-        </ul>
-      )}
+        </TabsContent>
+      </Tabs>
     </main>
   );
 }

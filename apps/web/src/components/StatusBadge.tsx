@@ -1,20 +1,24 @@
+import { Badge } from '@/components/ui/badge';
 import type { WatchlistStatus } from '@/types/movie';
 
-const STATUS_STYLES: Record<WatchlistStatus, { label: string; className: string }> = {
-  PLANNED: { label: 'Planned', className: 'bg-blue-100 text-blue-800' },
-  WATCHING: { label: 'Watching', className: 'bg-amber-100 text-amber-800' },
-  WATCHED: { label: 'Watched', className: 'bg-green-100 text-green-800' },
+const STATUS_LABELS: Record<WatchlistStatus, string> = {
+  PLANNED: 'Planned',
+  WATCHING: 'Watching',
+  WATCHED: 'Watched',
+};
+
+// Monochrome by design: the three states read as a progression from outline
+// through muted to solid, rather than as three unrelated colours.
+const STATUS_VARIANTS: Record<WatchlistStatus, 'outline' | 'secondary' | 'default'> = {
+  PLANNED: 'outline',
+  WATCHING: 'secondary',
+  WATCHED: 'default',
 };
 
 export function StatusBadge({ status }: { status: WatchlistStatus }) {
-  const { label, className } = STATUS_STYLES[status];
-
   return (
-    <span
-      data-testid="status-badge"
-      className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${className}`}
-    >
-      {label}
-    </span>
+    <Badge data-testid="status-badge" variant={STATUS_VARIANTS[status]}>
+      {STATUS_LABELS[status]}
+    </Badge>
   );
 }
