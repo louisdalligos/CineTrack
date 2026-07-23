@@ -1,11 +1,11 @@
+import { Skeleton } from '@/components/ui/skeleton';
+
 export function MovieCardSkeleton() {
   return (
-    <div data-testid="movie-card-skeleton" className="overflow-hidden rounded-lg border">
-      <div className="aspect-[2/3] animate-pulse bg-gray-200" />
-      <div className="flex flex-col gap-2 p-3">
-        <div className="h-4 w-3/4 animate-pulse rounded bg-gray-200" />
-        <div className="h-3 w-1/2 animate-pulse rounded bg-gray-200" />
-      </div>
+    <div data-testid="movie-card-skeleton" className="flex flex-col gap-3">
+      <Skeleton className="aspect-[2/3] w-full rounded-lg" />
+      <Skeleton className="h-4 w-3/4" />
+      <Skeleton className="h-3 w-1/2" />
     </div>
   );
 }

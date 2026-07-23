@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import { RatingStars } from './RatingStars';
 import { StatusSelect } from './StatusSelect';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   useAddToWatchlist,
   useUpdateWatchlistItem,
@@ -23,70 +26,75 @@ export function WatchlistControls({ movie }: { movie: MovieDetails }) {
   const [pendingStatus, setPendingStatus] = useState<WatchlistStatus>('PLANNED');
 
   if (isPending) {
-    return <div className="h-12 w-64 animate-pulse rounded bg-gray-200" />;
+    return <Skeleton className="h-32 w-full" />;
   }
 
   if (!entry) {
     return (
-      <div className="flex flex-col gap-3 rounded-lg border p-4">
-        <p className="text-sm font-medium">Add to your watchlist</p>
-        <div className="flex flex-wrap items-center gap-3">
-          <StatusSelect value={pendingStatus} onChange={setPendingStatus} />
-          <button
-            type="button"
-            disabled={addToWatchlist.isPending}
-            onClick={() =>
-              addToWatchlist.mutate({
-                tmdbId: movie.tmdbId,
-                title: movie.title,
-                posterPath: movie.posterPath,
-                genres: movie.genres,
-                status: pendingStatus,
-              })
-            }
-            className="rounded bg-black px-4 py-2 text-sm text-white disabled:opacity-50"
-          >
-            {addToWatchlist.isPending ? 'Adding…' : 'Add to watchlist'}
-          </button>
-        </div>
-        {addToWatchlist.isError && (
-          <p role="alert" className="text-sm text-red-600">
-            {(addToWatchlist.error as Error).message}
-          </p>
-        )}
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium">Add to your watchlist</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <StatusSelect value={pendingStatus} onChange={setPendingStatus} />
+            <Button
+              disabled={addToWatchlist.isPending}
+              onClick={() =>
+                addToWatchlist.mutate({
+                  tmdbId: movie.tmdbId,
+                  title: movie.title,
+                  posterPath: movie.posterPath,
+                  genres: movie.genres,
+                  status: pendingStatus,
+                })
+              }
+            >
+              {addToWatchlist.isPending ? 'Adding…' : 'Add to watchlist'}
+            </Button>
+          </div>
+          {addToWatchlist.isError && (
+            <p role="alert" className="text-sm text-destructive">
+              {(addToWatchlist.error as Error).message}
+            </p>
+          )}
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border p-4">
-      <p className="text-sm font-medium">On your watchlist</p>
-
-      <div className="flex flex-wrap items-center gap-3">
-        <StatusSelect
-          value={entry.status}
-          disabled={updateItem.isPending}
-          onChange={(status) => updateItem.mutate({ id: entry.id, status })}
-        />
-        {updateItem.isPending && <span className="text-xs text-gray-500">Saving…</span>}
-      </div>
-
-      {entry.status === 'WATCHED' && (
-        <div className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Your rating</span>
-          <RatingStars
-            value={entry.rating}
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-sm font-medium">On your watchlist</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <StatusSelect
+            value={entry.status}
             disabled={updateItem.isPending}
-            onChange={(rating) => updateItem.mutate({ id: entry.id, rating })}
+            onChange={(status) => updateItem.mutate({ id: entry.id, status })}
           />
+          {updateItem.isPending && <span className="text-xs text-muted-foreground">Saving…</span>}
         </div>
-      )}
 
-      {updateItem.isError && (
-        <p role="alert" className="text-sm text-red-600">
-          {(updateItem.error as Error).message}
-        </p>
-      )}
-    </div>
+        {entry.status === 'WATCHED' && (
+          <div className="flex flex-col gap-1.5">
+            <span className="text-sm font-medium">Your rating</span>
+            <RatingStars
+              value={entry.rating}
+              disabled={updateItem.isPending}
+              onChange={(rating) => updateItem.mutate({ id: entry.id, rating })}
+            />
+          </div>
+        )}
+
+        {updateItem.isError && (
+          <p role="alert" className="text-sm text-destructive">
+            {(updateItem.error as Error).message}
+          </p>
+        )}
+      </CardContent>
+    </Card>
   );
 }

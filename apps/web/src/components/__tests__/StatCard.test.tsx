@@ -10,7 +10,7 @@ describe('StatCard', () => {
     expect(screen.getByText('12')).toBeInTheDocument();
   });
 
-  it('renders a dash for an unavailable value', () => {
+  it('renders a dash and hint when the value is unavailable', () => {
     render(<StatCard label="Average rating" value="—" hint="No ratings yet" />);
 
     expect(screen.getByText('—')).toBeInTheDocument();
@@ -18,8 +18,20 @@ describe('StatCard', () => {
   });
 
   it('omits the hint when none is given', () => {
-    const { container } = render(<StatCard label="Planned" value={4} />);
+    // Asserts on absence of the hint rather than on DOM shape: the previous
+    // version counted <span> elements, which broke as soon as the card was
+    // rebuilt on different markup.
+    const { unmount } = render(<StatCard label="Planned" value={4} hint="Only sometimes" />);
+    expect(screen.getByText('Only sometimes')).toBeInTheDocument();
+    unmount();
 
-    expect(container.querySelectorAll('span')).toHaveLength(2);
+    render(<StatCard label="Planned" value={4} />);
+    expect(screen.queryByText('Only sometimes')).not.toBeInTheDocument();
+  });
+
+  it('renders a zero value rather than treating it as empty', () => {
+    render(<StatCard label="Watched" value={0} />);
+
+    expect(screen.getByText('0')).toBeInTheDocument();
   });
 });

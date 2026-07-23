@@ -2,6 +2,9 @@
 
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
 
 interface FieldErrors {
@@ -42,63 +45,55 @@ export function RegisterForm() {
       await register({ email, password });
       router.push('/login?registered=true');
     } catch {
-      // registerError below already surfaces duplicate-email etc.
+      // registerError renders below.
     }
   }
 
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1">
-        <label htmlFor="email" className="text-sm font-medium">
-          Email
-        </label>
-        <input
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="email">Email</Label>
+        <Input
           id="email"
           type="email"
           autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="rounded border px-3 py-2"
+          aria-invalid={Boolean(fieldErrors.email)}
         />
         {fieldErrors.email && (
-          <p role="alert" className="text-sm text-red-600">
+          <p role="alert" className="text-sm text-destructive">
             {fieldErrors.email}
           </p>
         )}
       </div>
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="password" className="text-sm font-medium">
-          Password
-        </label>
-        <input
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="password">Password</Label>
+        <Input
           id="password"
           type="password"
           autoComplete="new-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="rounded border px-3 py-2"
+          aria-invalid={Boolean(fieldErrors.password)}
         />
         {fieldErrors.password && (
-          <p role="alert" className="text-sm text-red-600">
+          <p role="alert" className="text-sm text-destructive">
             {fieldErrors.password}
           </p>
         )}
       </div>
 
       {registerError && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-destructive">
           {registerError.message}
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={isRegistering}
-        className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
-      >
-        {isRegistering ? 'Creating account…' : 'Register'}
-      </button>
+      <Button type="submit" disabled={isRegistering} className="w-full">
+        {isRegistering ? 'Creating account…' : 'Create account'}
+      </Button>
     </form>
   );
 }

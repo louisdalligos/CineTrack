@@ -9,6 +9,8 @@ import { MovieCard } from './MovieCard';
 import { SearchBar } from './SearchBar';
 import { MovieGridSkeleton } from './MovieCardSkeleton';
 import { ErrorState } from './ErrorState';
+import { EmptyState } from './EmptyState';
+import { Button } from '@/components/ui/button';
 import type { WatchlistStatus } from '@/types/movie';
 
 const SEARCH_DEBOUNCE_MS = 300; // FR7
@@ -62,14 +64,14 @@ export function DiscoverScreen() {
       )}
 
       {!isPending && !isError && movies.length === 0 && (
-        <div className="rounded-lg border p-8 text-center">
-          <p className="font-medium">No movies found</p>
-          <p className="mt-1 text-sm text-gray-600">
-            {isSearching
+        <EmptyState
+          title="No movies found"
+          message={
+            isSearching
               ? `Nothing matched "${debouncedSearch}". Try a different title.`
-              : 'Trending movies are unavailable right now.'}
-          </p>
-        </div>
+              : 'Trending movies are unavailable right now.'
+          }
+        />
       )}
 
       {movies.length > 0 && (
@@ -86,13 +88,13 @@ export function DiscoverScreen() {
 
           {hasNextPage && (
             <div className="flex justify-center">
-              <button
+              <Button
+                variant="outline"
                 onClick={() => fetchNextPage()}
                 disabled={isFetchingNextPage}
-                className="rounded border px-6 py-2 text-sm font-medium hover:bg-gray-50 disabled:opacity-50"
               >
                 {isFetchingNextPage ? 'Loading…' : 'Load more'}
-              </button>
+              </Button>
             </div>
           )}
         </>
