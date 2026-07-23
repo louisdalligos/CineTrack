@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { MoviesModule } from './movies/movies.module';
 import { WatchlistModule } from './watchlist/watchlist.module';
 import { StatsModule } from './stats/stats.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { StatsModule } from './stats/stats.module';
     MoviesModule,
     WatchlistModule,
     StatsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
