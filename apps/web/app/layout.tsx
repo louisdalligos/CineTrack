@@ -8,6 +8,25 @@ import { Toaster } from '@/components/ui/sonner';
 export const metadata: Metadata = {
   title: 'CineTrack',
   description: 'Track what you watch, and what you meant to.',
+  // Required for iOS: web push is only delivered once the site has been
+  // installed to the Home Screen, which needs a manifest and a touch icon.
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    title: 'CineTrack',
+    statusBarStyle: 'black-translucent',
+  },
+  icons: {
+    icon: '/icon-192.png',
+    apple: '/apple-touch-icon.png',
+  },
+};
+
+export const viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a0a0a' },
+  ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
