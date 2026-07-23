@@ -75,6 +75,7 @@ pnpm install
 # API
 cp apps/api/.env.example apps/api/.env    # set DATABASE_URL, JWT_SECRET, TMDB_API_KEY
 cd apps/api
+pnpm prisma:generate                      # generates the typed Prisma client
 pnpm prisma:migrate:deploy
 pnpm prisma:seed
 cd ../..
