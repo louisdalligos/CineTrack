@@ -1,3 +1,109 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+ * CineTrack theme tokens.
+ *
+ * Direction: a private viewing log rather than cinema spectacle — an ink and
+ * paper base kept deliberately quiet, with amber as the only warm colour.
+ * Amber is inherited from the product: RatingStars already used amber-500, so
+ * the accent belongs to the thing the app is actually about (what you thought
+ * of a film) rather than being decoration applied over it.
+ *
+ * Values here are calibrated to the colours the app already renders, so
+ * introducing the token layer changes nothing visually. Components adopt the
+ * tokens in E7-S2, which is where the identity becomes visible.
+ */
+
+@layer base {
+  :root {
+    /* Paper — a hair off pure white, cool rather than cream. */
+    --background: 60 9% 99%;
+    --foreground: 223 14% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 223 14% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 223 14% 10%;
+
+    /* Ink. Matches the near-black the existing buttons already use. */
+    --primary: 223 14% 10%;
+    --primary-foreground: 60 9% 98%;
+
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 223 14% 10%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 215 14% 34%;
+
+    /* Amber — ratings, active state, chart. The one warm note. */
+    --accent: 38 92% 50%;
+    --accent-foreground: 223 14% 10%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 60 9% 98%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 223 14% 10%;
+
+    /* Genre breakdown: an amber ramp descending into slate, so rank is
+       legible from colour alone rather than only from bar length. */
+    --chart-1: 38 92% 50%;
+    --chart-2: 32 85% 44%;
+    --chart-3: 26 72% 38%;
+    --chart-4: 220 9% 46%;
+    --chart-5: 223 14% 28%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 223 16% 7%;
+    --foreground: 60 9% 96%;
+
+    --card: 223 14% 10%;
+    --card-foreground: 60 9% 96%;
+
+    --popover: 223 14% 10%;
+    --popover-foreground: 60 9% 96%;
+
+    --primary: 60 9% 96%;
+    --primary-foreground: 223 14% 10%;
+
+    --secondary: 223 12% 16%;
+    --secondary-foreground: 60 9% 96%;
+
+    --muted: 223 12% 16%;
+    --muted-foreground: 220 9% 65%;
+
+    --accent: 38 92% 50%;
+    --accent-foreground: 223 14% 10%;
+
+    --destructive: 0 63% 50%;
+    --destructive-foreground: 60 9% 96%;
+
+    --border: 223 10% 20%;
+    --input: 223 10% 20%;
+    --ring: 220 9% 65%;
+
+    --chart-1: 38 92% 55%;
+    --chart-2: 32 85% 48%;
+    --chart-3: 26 72% 42%;
+    --chart-4: 220 9% 55%;
+    --chart-5: 220 9% 38%;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+}
