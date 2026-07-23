@@ -6,6 +6,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { MoviesModule } from './movies/movies.module';
 import { WatchlistModule } from './watchlist/watchlist.module';
+import { StatsModule } from './stats/stats.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { WatchlistModule } from './watchlist/watchlist.module';
     AuthModule,
     MoviesModule,
     WatchlistModule,
+    StatsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
