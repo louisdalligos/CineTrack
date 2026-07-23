@@ -14,6 +14,9 @@ FROM base AS build
 # URL so local builds keep working without passing anything.
 ARG NEXT_PUBLIC_API_URL=http://localhost:4000
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+# Same build-time constraint: empty simply disables the notification UI.
+ARG NEXT_PUBLIC_VAPID_PUBLIC_KEY=
+ENV NEXT_PUBLIC_VAPID_PUBLIC_KEY=$NEXT_PUBLIC_VAPID_PUBLIC_KEY
 COPY . .
 RUN pnpm install --frozen-lockfile
 RUN pnpm --filter web build
