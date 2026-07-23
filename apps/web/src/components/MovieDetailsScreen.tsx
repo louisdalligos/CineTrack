@@ -40,7 +40,7 @@ export function MovieDetailsScreen({ tmdbId }: { tmdbId: number }) {
 
   if (isPending) {
     return (
-      <main className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-8 sm:px-6">
+      <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-8 sm:px-6">
         {backButton}
         <div className="flex flex-col gap-6 sm:flex-row">
           <Skeleton className="aspect-[2/3] w-full rounded-lg sm:w-64" />
@@ -57,7 +57,7 @@ export function MovieDetailsScreen({ tmdbId }: { tmdbId: number }) {
   if (isError) {
     const notFound = error instanceof ApiError && error.status === 404;
     return (
-      <main className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-8 sm:px-6">
+      <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-8 sm:px-6">
         {backButton}
         <ErrorState
           title={notFound ? 'Movie not found' : 'Something went wrong'}
@@ -75,7 +75,7 @@ export function MovieDetailsScreen({ tmdbId }: { tmdbId: number }) {
   const poster = posterUrl(movie.posterPath, 'w500');
 
   return (
-    <main className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-8 sm:px-6">
+    <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-8 sm:px-6">
       {backButton}
 
       <div className="flex flex-col gap-6 sm:flex-row">
