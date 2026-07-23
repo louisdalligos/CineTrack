@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Analytics } from '@vercel/analytics/react';
 import './globals.css';
 import { Providers } from './providers';
 import { Nav } from '@/components/Nav';
@@ -16,6 +17,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Nav />
           {children}
         </Providers>
+        {/* FR23 — page views across every screen. No-ops outside Vercel, so
+            it is safe to leave enabled in local and Docker runs. */}
+        <Analytics />
       </body>
     </html>
   );
